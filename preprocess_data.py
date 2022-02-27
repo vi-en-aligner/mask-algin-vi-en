@@ -32,18 +32,38 @@ def process_en(sents):
     
     return processed_sents
 
+def create_ref(ref_sents):
+    i = 0
+    processed_refs = []
+    for sen in ref_sents:
+        refs = re.findall("\(\{[ \d]*\}\)", sen)
+        pairs = []
+        for i, ref in enumerate(refs):
+            if i == 0:
+                continue
+            list_ref = list(map(int, ref[2:-2].split()))
+            for p in list_ref:
+                pairs.append(f'{p}-{i}')
+        processed_refs.append(' '.join(pairs) + '\n')
+    return processed_refs
+    
+
 if __name__ == '__main__':
     random.seed(9072000)
     total_processed, vi_sents, en_sents = read_from_file()
+    ref_sents = en_sents
     en_sents = process_en(en_sents)
     
     train_len = int(total_processed * 0.8)
-    train_vi = vi_sents[:train_len]
-    train_en = en_sents[:train_len]
+    # train_vi = vi_sents[:train_len]
+    # train_en = en_sents[:train_len]
     test_vi = vi_sents[train_len:]
     test_en = en_sents[train_len:]
+    test_ref_sents = ref_sents[train_len:]
+    processed_refs = create_ref(test_ref_sents)
 
-    write_to_file(train_vi, "train_vi.src")
-    write_to_file(train_en, "train_en.tgt")
+    # write_to_file(train_vi, "train_vi.src")
+    # write_to_file(train_en, "train_en.tgt")
     write_to_file(test_vi, "test_vi.src")
     write_to_file(test_en, "test_en.tgt")
+    write_to_file(processed_refs, "gold-vi-en.talp")
