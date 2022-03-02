@@ -55,15 +55,25 @@ if __name__ == '__main__':
     en_sents = process_en(en_sents)
     
     train_len = int(total_processed * 0.8)
-    # train_vi = vi_sents[:train_len]
-    # train_en = en_sents[:train_len]
+    valid_len = int(train_len * 0.9)
+
+    train_vi = vi_sents[:train_len]
+    train_en = en_sents[:train_len]
     test_vi = vi_sents[train_len:]
     test_en = en_sents[train_len:]
+
+    valid_vi = train_vi[valid_len:]
+    train_vi = train_vi[:valid_len]
+    valid_en = train_en[valid_len:]
+    train_en = train_en[:valid_len]
+
     test_ref_sents = ref_sents[train_len:]
     processed_refs = create_ref(test_ref_sents)
 
-    # write_to_file(train_vi, "train_vi.src")
-    # write_to_file(train_en, "train_en.tgt")
+    write_to_file(train_vi, "train_vi.src")
+    write_to_file(train_en, "train_en.tgt")
+    write_to_file(valid_vi, "valid_vi.src")
+    write_to_file(valid_en, "valid_en.src")
     write_to_file(test_vi, "test_vi.src")
     write_to_file(test_en, "test_en.tgt")
     write_to_file(processed_refs, "gold-vi-en.talp")
