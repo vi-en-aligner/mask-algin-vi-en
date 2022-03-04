@@ -81,4 +81,4 @@ if __name__ == '__main__':
     write_to_file(valid_en, "valid_en.src")
     write_to_file(test_vi, "test_vi.src", ignored_refs)
     write_to_file(test_en, "test_en.tgt", ignored_refs)
-    write_to_file(processed_refs, "gold-vi-en.talp", ignored_refs)
+    write_to_file(processed_refs, "gold-vi-en.talp")
