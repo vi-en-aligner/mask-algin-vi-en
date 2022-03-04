@@ -18,10 +18,11 @@ def read_from_file():
     assert total_processed == len(vi_sents) == len(en_sents)
     return total_processed, vi_sents, en_sents
 
-def write_to_file(sents, file_name):
+def write_to_file(sents, file_name, ignored_idx = set()):
     with open(os.path.join("data/", file_name), "w") as writer:
-        for sen in sents:
-            writer.write(sen)
+        for i, sen in enumerate(sents):
+            if i not in ignored_idx:
+                writer.write(sen)
 
 
 def process_en(sents):
@@ -32,10 +33,10 @@ def process_en(sents):
     
     return processed_sents
 
-def create_ref(ref_sents):
+def create_ref(ref_sents, ignored_refs):
     i = 0
     processed_refs = []
-    for sen in ref_sents:
+    for ref_i, sen in enumerate(ref_sents):
         refs = re.findall("\(\{[ \d]*\}\)", sen)
         pairs = []
         for i, ref in enumerate(refs):
@@ -44,7 +45,10 @@ def create_ref(ref_sents):
             list_ref = list(map(int, ref[2:-2].split()))
             for p in list_ref:
                 pairs.append(f'{p}-{i}')
-        processed_refs.append(' '.join(pairs) + '\n')
+        if len(pairs) > 0:
+            processed_refs.append(' '.join(pairs) + '\n')
+        else:
+            ignored_refs.add(ref_i)
     return processed_refs
     
 
@@ -68,12 +72,13 @@ if __name__ == '__main__':
     train_en = train_en[:valid_len]
 
     test_ref_sents = ref_sents[train_len:]
-    processed_refs = create_ref(test_ref_sents)
+    ignored_refs = set()
+    processed_refs = create_ref(test_ref_sents, ignored_refs)
 
     write_to_file(train_vi, "train_vi.src")
     write_to_file(train_en, "train_en.tgt")
     write_to_file(valid_vi, "valid_vi.src")
     write_to_file(valid_en, "valid_en.src")
-    write_to_file(test_vi, "test_vi.src")
-    write_to_file(test_en, "test_en.tgt")
-    write_to_file(processed_refs, "gold-vi-en.talp")
+    write_to_file(test_vi, "test_vi.src", ignored_refs)
+    write_to_file(test_en, "test_en.tgt", ignored_refs)
+    write_to_file(processed_refs, "gold-vi-en.talp", ignored_refs)
