@@ -6,7 +6,7 @@ def read_from_file():
     vi_sents = []
     en_sents = []
     total_processed = 0
-    f = open("data/data_gold_10000.txt", "r")
+    f = open("../data/data_gold_10000.txt", "r")
     for i, line in enumerate(f):
         if i % 3 == 0:
             total_processed += 1
@@ -33,10 +33,25 @@ def process_en(sents):
     
     return processed_sents
 
-def create_ref(ref_sents, ignored_refs):
+# def create_ref(ref_sents):
+#     i = 0
+#     processed_refs = []
+#     for sen in ref_sents:
+#         refs = re.findall("\(\{[ \d]*\}\)", sen)
+#         pairs = []
+#         for i, ref in enumerate(refs):
+#             if i == 0:
+#                 continue
+#             list_ref = list(map(int, ref[2:-2].split()))
+#             for p in list_ref:
+#                 pairs.append(f'{p}-{i}')
+#         processed_refs.append(' '.join(pairs) + '\n')
+#     return processed_refs
+
+def create_ref(ref_sents):
     i = 0
     processed_refs = []
-    for ref_i, sen in enumerate(ref_sents):
+    for sen in ref_sents:
         refs = re.findall("\(\{[ \d]*\}\)", sen)
         pairs = []
         for i, ref in enumerate(refs):
@@ -44,12 +59,10 @@ def create_ref(ref_sents, ignored_refs):
                 continue
             list_ref = list(map(int, ref[2:-2].split()))
             for p in list_ref:
-                pairs.append(f'{p}-{i}')
-        if len(pairs) > 0:
-            processed_refs.append(' '.join(pairs) + '\n')
-        else:
-            ignored_refs.add(ref_i)
+                pairs.append(f'{i}-{p}')
+        processed_refs.append(' '.join(pairs) + '\n')
     return processed_refs
+
     
 
 if __name__ == '__main__':
@@ -59,26 +72,21 @@ if __name__ == '__main__':
     en_sents = process_en(en_sents)
     
     train_len = int(total_processed * 0.8)
-    valid_len = int(train_len * 0.9)
+    # valid_len = int(train_len * 0.9)
 
     train_vi = vi_sents[:train_len]
     train_en = en_sents[:train_len]
     test_vi = vi_sents[train_len:]
     test_en = en_sents[train_len:]
 
-    valid_vi = train_vi[valid_len:]
-    train_vi = train_vi[:valid_len]
-    valid_en = train_en[valid_len:]
-    train_en = train_en[:valid_len]
-
     test_ref_sents = ref_sents[train_len:]
-    ignored_refs = set()
-    processed_refs = create_ref(test_ref_sents, ignored_refs)
+    processed_refs = create_ref(test_ref_sents)
+    train_ref_sents = ref_sents[:train_len]
+    processed_refs_train = create_ref(train_ref_sents)
 
-    write_to_file(train_vi, "train_vi.src")
-    write_to_file(train_en, "train_en.tgt")
-    write_to_file(valid_vi, "valid_vi.src")
-    write_to_file(valid_en, "valid_en.src")
-    write_to_file(test_vi, "test_vi.src", ignored_refs)
-    write_to_file(test_en, "test_en.tgt", ignored_refs)
-    write_to_file(processed_refs, "gold-vi-en.talp")
+    write_to_file(train_vi, "train_vi.tgt")
+    write_to_file(train_en, "train_en.src")
+    write_to_file(test_vi, "test_vi.tgt")
+    write_to_file(test_en, "test_en.src")
+    write_to_file(processed_refs, "test-gold-en-vi.talp")
+    write_to_file(processed_refs_train, "train-gold-en-vi.talp")
